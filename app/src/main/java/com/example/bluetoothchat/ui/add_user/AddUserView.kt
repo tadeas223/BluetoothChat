@@ -17,16 +17,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.bluetoothchat.data.model.Device
 import com.example.bluetoothchat.ui.add_user.components.AddUserScreen
 import kotlinx.coroutines.flow.StateFlow
-import com.
 @Composable
 fun AddUserView() {
     val viewModel = hiltViewModel<AddUserViewModel>()
     val scannedDevices by viewModel.scannedDevices.collectAsState()
     viewModel.startScan()
 
-    Surface(
-        color = Catppuccin.
-    ) {
+    Surface() {
         AddUserScreen(scannedDevices) {}
     }
 }

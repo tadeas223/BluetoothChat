@@ -1,0 +1,35 @@
+package com.example.bluetoothchat.data.user.contact
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+import com.example.bluetoothchat.domain.user.Contact
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+
+@Dao
+interface ContactDao {
+    @Query("SELECT * FROM contact WHERE :name = username")
+    fun selectByName(name: String): ContactEntity
+
+    @Query("SELECT * FROM contact WHERE :address = address")
+    fun selectByAddress(address: String): ContactEntity
+
+    @Query("SELECT * FROM contact")
+    fun selectAll(): Flow<List<Contact>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(contactEntity: ContactEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(vararg contactEntity: ContactEntity)
+
+    @Update
+    suspend fun update(vararg contactEntity: ContactEntity)
+
+    @Delete
+    suspend fun delete(contactEntity: ContactEntity)
+}

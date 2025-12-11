@@ -1,6 +1,6 @@
 package com.example.bluetoothchat.data.bluetooth
 
-import com.example.bluetoothchat.data.model.Device
+import com.example.bluetoothchat.domain.bluetooth.Device
 import kotlinx.coroutines.flow.StateFlow
 
 interface BluetoothScanner {
@@ -8,6 +8,4 @@ interface BluetoothScanner {
 
     fun startScan()
     fun stopScan()
-
-    fun destroy()
 }

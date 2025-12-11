@@ -1,4 +1,4 @@
-package com.example.bluetoothchat.ui
+package com.example.bluetoothchat.presentation
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -13,14 +13,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.bluetoothchat.ui.add_user.AddUserViewModel
-import com.example.bluetoothchat.ui.add_user.AddUserView
-import com.example.bluetoothchat.ui.theme.BluetoothChatTheme
+import com.example.bluetoothchat.presentation.add_user.AddUserView
+import com.example.bluetoothchat.presentation.theme.BluetoothChatTheme
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.hilt.navigation.compose.hiltViewModel
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -72,23 +69,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            AddUserView()
+            AppNavHost()
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BluetoothChatTheme {
-        Greeting("Android")
     }
 }

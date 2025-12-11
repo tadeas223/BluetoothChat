@@ -1,4 +1,4 @@
-package com.example.bluetoothchat.data.model
+package com.example.bluetoothchat.domain.bluetooth
 
 data class Device (
     val address: String,

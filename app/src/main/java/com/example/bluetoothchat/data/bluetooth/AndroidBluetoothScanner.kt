@@ -8,7 +8,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import com.example.bluetoothchat.data.model.Device
+import com.example.bluetoothchat.domain.bluetooth.Device
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
@@ -53,7 +53,7 @@ class AndroidBluetoothScanner @Inject constructor(
             isScanning = true
         }
 
-        if(!hasPermissions(Manifest.permission.BLUETOOTH_SCAN)) {
+        if(!hasPermissions(context,Manifest.permission.BLUETOOTH_SCAN)) {
             Log.w("BluetoothChat", "startScan() -> does not have permission BLUETOOTH_SCAN")
             return
         }
@@ -74,20 +74,15 @@ class AndroidBluetoothScanner @Inject constructor(
             isScanning = false
         }
 
-        if(!hasPermissions(Manifest.permission.BLUETOOTH_SCAN)) {
+        if(!hasPermissions(context,Manifest.permission.BLUETOOTH_SCAN)) {
             Log.w("BluetoothChat", "stopScan() -> does not have permission BLUETOOTH_SCAN")
             return
         }
 
+        _scannedDevices.value = emptyList()
+
         bluetoothAdapter?.cancelDiscovery()
-
-    }
-
-    override fun destroy() {
         context.unregisterReceiver(foundDeviceReceiver)
     }
 
-    private fun hasPermissions(permission: String): Boolean {
-        return context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
-    }
 }

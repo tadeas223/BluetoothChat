@@ -7,11 +7,11 @@ interface ChatMessageRepository {
     suspend fun insert(message: ChatMessage)
     suspend fun insertAll(vararg message: ChatMessage)
 
-    fun selectById(id: Int): ChatMessage
-    fun selectAll(): List<ChatMessage>
-    fun selectByContact(sender: Contact): List<ChatMessage>
+    fun selectById(id: Int): Flow<ChatMessage>
+    fun selectAll(): Flow<List<ChatMessage>>
+    fun selectByContact(contact: Contact): Flow<List<ChatMessage>>
+    fun selectByContactId(id: Int): Flow<List<ChatMessage>>
 
-    fun selectByContactFlow(sender: Contact): Flow<List<ChatMessage>>
 
     suspend fun update(message: ChatMessage)
     suspend fun delete(message: ChatMessage)

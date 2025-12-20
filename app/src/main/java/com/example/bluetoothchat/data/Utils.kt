@@ -9,7 +9,7 @@ fun hasPermission(context: Context, permission: String): Boolean {
 
 fun hasPermissions(context: Context, permissions: List<String>): Boolean {
     permissions.forEach { perm ->
-        if(context.checkSelfPermission(perm) == PackageManager.PERMISSION_GRANTED) {
+        if(context.checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED) {
             return false
         }
     }

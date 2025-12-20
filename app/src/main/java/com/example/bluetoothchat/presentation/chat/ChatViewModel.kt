@@ -15,11 +15,19 @@ import com.example.bluetoothchat.domain.user.contact.Contact
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,23 +37,46 @@ class ChatViewModel @Inject constructor(
     val bluetoothConnectService: BluetoothConnectService
 ) : ViewModel() {
     private var connection: Connection? = null
+
+    private val _contactId = MutableStateFlow<Int?>(null)
     private val _contact = MutableStateFlow<Contact?>(null)
-    val contact: StateFlow<Contact?>
-        get() = _contact.asStateFlow()
 
-    private val _messages = MutableStateFlow(emptyList<ChatMessage>())
+    val contact: StateFlow<Contact?> = _contact
 
-    val messages: StateFlow<List<ChatMessage>>
-        get() = _messages.asStateFlow()
+    val messages: StateFlow<List<ChatMessage>> = _contactId
+        .flatMapLatest { id ->
+            if (id != null) messageRepository.selectByContactId(id)
+            else emptyFlow()
+        }
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    var isConnected: Flow<Boolean> = emptyFlow()
 
     fun setContact(id: Int) {
         viewModelScope.launch {
-            _contact.value = contactRepository.selectById(id)
-            if(contact.value != null) {
-                connection = bluetoothConnectService.connect(contact.value!!.address)
+            _contactId.value = id
+
+            _contact.value = withContext(Dispatchers.IO) {
+                contactRepository.selectById(id).firstOrNull()
             }
 
-            messages = messageRepository.selectByContactFlow(contact)
+            _contact.value?.let {
+                connection = withContext(Dispatchers.IO) {
+                    bluetoothConnectService.connect(it.address)
+                }
+                isConnected = connection?.isConnected ?: emptyFlow()
+            }
+        }
+    }
+    fun sendMessage(text: String) {
+        var connected = false
+        viewModelScope.launch {
+            isConnected.collect {
+                connected = it
+            }
+
+            if(connected && contact.value != null) {
+                messageRepository.insert(ChatMessage(text = text, contact = contact.value!!))
+            }
         }
     }
 

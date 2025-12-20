@@ -40,7 +40,6 @@ class AndroidBluetoothConnectService @Inject constructor(
     private val _activeConnections = MutableStateFlow<Map<Device, Connection>>(emptyMap())
     override val requiredPermissions = listOf(
         Manifest.permission.BLUETOOTH_CONNECT,
-        Manifest.permission.BLUETOOTH,
     )
 
     override val activeConnections

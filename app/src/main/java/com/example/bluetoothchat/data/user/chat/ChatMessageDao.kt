@@ -26,14 +26,11 @@ interface ChatMessageDao {
     fun delete(message: ChatMessageEntity)
 
     @Query("SELECT * FROM message")
-    fun selectAll(): List<ChatMessageEntity>
+    fun selectAll(): Flow<List<ChatMessageEntity>>
 
     @Query("SELECT * FROM message WHERE :id = id")
-    fun selectById(id: Int): ChatMessageEntity
+    fun selectById(id: Int): Flow<ChatMessageEntity>
 
     @Query("SELECT * FROM message WHERE :id = contactId")
-    fun selectByContactId(id: Int): List<ChatMessageEntity>
-
-    @Query("SELECT * FROM message WHERE :id = contactId")
-    fun selectByContactIdFlow(id: Int): Flow<List<ChatMessageEntity>>
+    fun selectByContactId(id: Int): Flow<List<ChatMessageEntity>>
 }

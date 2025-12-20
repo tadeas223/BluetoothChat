@@ -15,20 +15,20 @@ class RoomContactRepository @Inject constructor(
         dao.insert(contact.toEntity())
     }
 
-    override fun selectAll(): List<Contact> {
-        return dao.selectAll().map { it.toContact() }
+    override fun selectAll(): Flow<List<Contact>> {
+        return dao.selectAll().map { list -> list.map {it.toContact() }}
     }
 
     override suspend fun insertAll(vararg contact: Contact) {
         dao.insertAll(*contact.map { it.toEntity() }.toTypedArray())
     }
 
-    override fun selectByName(name: String): Contact {
-        return dao.selectByName(name).toContact()
+    override fun selectByName(name: String): Flow<Contact> {
+        return dao.selectByName(name).map { it.toContact() }
     }
 
-    override fun selectByAddress(address: String): Contact {
-        return dao.selectByAddress(address).toContact()
+    override fun selectByAddress(address: String): Flow<Contact> {
+        return dao.selectByAddress(address).map{ it.toContact() }
     }
 
     override suspend fun update(
@@ -41,7 +41,7 @@ class RoomContactRepository @Inject constructor(
         dao.delete(contact.toEntity())
     }
 
-    override fun selectById(id: Int): Contact {
-        return dao.selectById(id).toContact()
+    override fun selectById(id: Int): Flow<Contact> {
+        return dao.selectById(id).map {it.toContact()}
     }
 }

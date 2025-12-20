@@ -39,12 +39,14 @@ import com.example.bluetoothchat.domain.user.chat.ChatMessage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatView(contactId: Int, onBack: () -> Unit) {
+fun ChatView(contactId: Int,
+             onBack: () -> Unit) {
     val viewModel = hiltViewModel<ChatViewModel>()
     var input by remember { mutableStateOf("") }
-    val messages = viewModel.messages.collectAsState().value
+    val messages by viewModel.messages.collectAsState(emptyList())
     val username = viewModel.contact.collectAsState().value?.username
-    val connectionResult = viewModel.connectionResult.collectAsState(null)
+
+    val isConnected by viewModel.isConnected.collectAsState(false)
 
     LaunchedEffect(contactId) {
         viewModel.setContact(contactId)
@@ -65,7 +67,7 @@ fun ChatView(contactId: Int, onBack: () -> Unit) {
         )
 
         Text(
-            text = if (connectionResult == ConnectionResult.ConnectionEstablished) {
+            text = if (isConnected) {
                 "connected"
             } else {
                 "disconnected"
@@ -82,7 +84,7 @@ fun ChatView(contactId: Int, onBack: () -> Unit) {
             onValueChange = { input = it },
             onSend = {
                 if (input.isNotBlank()) {
-                    //viewModel.sendMessage(input)
+                    viewModel.sendMessage(input)
                     input = ""
                 }
             }
@@ -112,15 +114,12 @@ fun MessageBubble(message: ChatMessage) {
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         horizontalArrangement =
-            if (message.isFromLocalUser) Arrangement.End else Arrangement.Start
+            Arrangement.Start
     ) {
         Box(
             modifier = Modifier
                 .background(
-                    color = if (message.isFromLocalUser)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.surfaceVariant,
+                    color = MaterialTheme.colorScheme.primary,
                     shape = RoundedCornerShape(12.dp)
                 )
                 .padding(12.dp)

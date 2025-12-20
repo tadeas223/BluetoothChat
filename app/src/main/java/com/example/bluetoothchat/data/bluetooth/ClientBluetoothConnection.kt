@@ -34,8 +34,14 @@ class ClientBluetoothConnection: Connection {
         _isConnected.value = socket.isConnected
     }
 
-    fun connectToSocket(socket: BluetoothSocket) {
-        socket.connect()
+    suspend fun connectToSocket(socket: BluetoothSocket) {
+        try {
+            socket.connect()
+        } catch (_: IOException) {
+            _isConnected.value = false
+            callDisconnectListeners()
+            return
+        }
         this.socket = socket
         _isConnected.value = socket.isConnected
     }

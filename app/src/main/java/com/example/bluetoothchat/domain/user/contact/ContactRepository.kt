@@ -6,10 +6,10 @@ interface ContactRepository {
     suspend fun insert(contact: Contact)
     suspend fun insertAll(vararg contact: Contact)
 
-    fun selectById(id: Int): Contact
-    fun selectAll(): List<Contact>
-    fun selectByName(name: String): Contact
-    fun selectByAddress(address: String): Contact
+    fun selectById(id: Int): Flow<Contact>
+    fun selectAll(): Flow<List<Contact>>
+    fun selectByName(name: String): Flow<Contact>
+    fun selectByAddress(address: String): Flow<Contact>
     suspend fun update(contact: Contact)
     suspend fun delete(contact: Contact)
 }

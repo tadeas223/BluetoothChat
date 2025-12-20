@@ -20,22 +20,16 @@ class RoomChatMessageRepository @Inject constructor(
         dao.insertAll(*message.map { it.toEntity() }.toTypedArray())
     }
 
-    override fun selectById(id: Int): ChatMessage {
-        return dao.selectById(id).toChatMessage(contactRepository)
+    override fun selectById(id: Int): Flow<ChatMessage> {
+        return dao.selectById(id).map {it.toChatMessage(contactRepository)}
     }
 
-    override fun selectAll(): List<ChatMessage> {
-        return dao.selectAll().map { it.toChatMessage(contactRepository) }
+    override fun selectAll(): Flow<List<ChatMessage>> {
+        return dao.selectAll().map { list -> list.map { it.toChatMessage(contactRepository) } }
     }
 
-    override fun selectByContact(sender: Contact): List<ChatMessage> {
-        return dao.selectByContactId(sender.id).map {it.toChatMessage(contactRepository)}
-    }
-
-    override fun selectByContactFlow(sender: Contact): Flow<List<ChatMessage>> {
-        return dao.selectByContactIdFlow(sender.id).map { list -> list.map {
-            it.toChatMessage(contactRepository)
-        }}
+    override fun selectByContact(contact: Contact): Flow<List<ChatMessage>> {
+        return dao.selectByContactId(contact.id).map { list -> list.map { it.toChatMessage(contactRepository) }}
     }
 
     override suspend fun update(message: ChatMessage) {
@@ -44,5 +38,9 @@ class RoomChatMessageRepository @Inject constructor(
 
     override suspend fun delete(message: ChatMessage) {
         return dao.delete(message.toEntity())
+    }
+
+    override fun selectByContactId(id: Int): Flow<List<ChatMessage>> {
+        return dao.selectByContactId(id).map {list -> list.map { it.toChatMessage(contactRepository) }}
     }
 }

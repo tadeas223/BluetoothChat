@@ -1,14 +1,14 @@
 package com.example.bluetoothchat.data.user.chat
 
-import com.example.bluetoothchat.data.user.contact.toContact
 import com.example.bluetoothchat.domain.user.chat.ChatMessage
-import com.example.bluetoothchat.domain.user.chat.ChatMessageRepository
 import com.example.bluetoothchat.domain.user.contact.ContactRepository
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 
-fun ChatMessageEntity.toChatMessage(contactRepository: ContactRepository): ChatMessage {
+suspend fun ChatMessageEntity.toChatMessage(contactRepository: ContactRepository): ChatMessage {
     return ChatMessage(
         id = this.id,
-        sender = contactRepository.selectById(this.senderId),
+        contact = contactRepository.selectById(this.contactId).first(),
         text = this.text,
     )
 }
@@ -16,7 +16,7 @@ fun ChatMessageEntity.toChatMessage(contactRepository: ContactRepository): ChatM
 fun ChatMessage.toEntity(): ChatMessageEntity {
     return ChatMessageEntity(
         id = this.id,
-        senderId = this.sender.id,
+        contactId = this.contact.id,
         text = this.text,
     )
 }

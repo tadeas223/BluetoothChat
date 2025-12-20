@@ -13,16 +13,16 @@ import kotlinx.coroutines.flow.StateFlow
 @Dao
 interface ContactDao {
     @Query("SELECT * FROM contact WHERE :name = username")
-    fun selectByName(name: String): ContactEntity
+    fun selectByName(name: String): Flow<ContactEntity>
 
     @Query("SELECT * FROM contact WHERE :id = id")
-    fun selectById(id: Int): ContactEntity
+    fun selectById(id: Int): Flow<ContactEntity>
 
     @Query("SELECT * FROM contact WHERE :address = address")
-    fun selectByAddress(address: String): ContactEntity
+    fun selectByAddress(address: String): Flow<ContactEntity>
 
     @Query("SELECT * FROM contact")
-    fun selectAll(): List<ContactEntity>
+    fun selectAll(): Flow<List<ContactEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(contactEntity: ContactEntity)

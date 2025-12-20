@@ -13,9 +13,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.bluetoothchat.presentation.components.ClickableCard
 import com.example.bluetoothchat.presentation.components.ClickableCardItem
+import kotlinx.coroutines.flow.map
 
 @Composable
-fun ContactsView(onAddUser: () -> Unit) {
+fun ContactsView(
+    onAddUser: () -> Unit,
+    onContactSelect: (id: Int) -> Unit
+) {
     val viewModel = hiltViewModel<ContactsViewModel>()
     val contacts by viewModel.contacts.collectAsState(initial = emptyList())
 
@@ -29,8 +33,8 @@ fun ContactsView(onAddUser: () -> Unit) {
         }
         Row {
             ClickableCard(
-                contacts.map {
-                    ClickableCardItem(it.username, {println("clicked")})
+                contacts.map { contact ->
+                    ClickableCardItem(contact.username, {onContactSelect(contact.id)})
                 }
             )
         }

@@ -1,8 +1,8 @@
 package com.example.bluetoothchat.di
 
 import android.content.Context
-import com.example.bluetoothchat.data.bluetooth.AndroidBluetoothScanService
-import com.example.bluetoothchat.domain.bluetooth.BluetoothScanService
+import com.example.bluetoothchat.data.AndroidPermissionChecker
+import com.example.bluetoothchat.domain.PermissionChecker
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,11 +12,10 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class BluetoothModule {
+object MainModule {
     @Provides
     @Singleton
-    fun provideBluetoothScanner(@ApplicationContext context: Context): BluetoothScanService {
-        return AndroidBluetoothScanService(context)
+    fun providePermissionChecker(@ApplicationContext context: Context): PermissionChecker {
+        return AndroidPermissionChecker(context)
     }
-
 }

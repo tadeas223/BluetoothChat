@@ -5,20 +5,24 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.util.Log
-import androidx.annotation.RequiresPermission
+import com.example.bluetoothchat.data.hasPermissions
+import com.example.bluetoothchat.domain.bluetooth.BluetoothScanService
 import com.example.bluetoothchat.domain.bluetooth.Device
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
+import kotlin.collections.plus
 
-class AndroidBluetoothScanner @Inject constructor(
+class AndroidBluetoothScanService @Inject constructor(
     @ApplicationContext private val context: Context
-): BluetoothScanner {
+): BluetoothScanService {
+    override val requiredPermissions = listOf(
+        Manifest.permission.BLUETOOTH_SCAN
+    )
 
     private var isScanning = false
 
@@ -47,15 +51,14 @@ class AndroidBluetoothScanner @Inject constructor(
         get() = _scannedDevices.asStateFlow()
 
     override fun startScan() {
+        if(!hasPermissions(context, requiredPermissions)) {
+            throw SecurityException("missing required permissions")
+        }
+
         if(isScanning) {
             return
         } else {
             isScanning = true
-        }
-
-        if(!hasPermissions(context,Manifest.permission.BLUETOOTH_SCAN)) {
-            Log.w("BluetoothChat", "startScan() -> does not have permission BLUETOOTH_SCAN")
-            return
         }
 
         context.registerReceiver(
@@ -68,15 +71,14 @@ class AndroidBluetoothScanner @Inject constructor(
     }
 
     override fun stopScan() {
+        if(!hasPermissions(context, requiredPermissions)) {
+            throw SecurityException("missing required permissions")
+        }
+
         if(!isScanning) {
             return
         } else {
             isScanning = false
-        }
-
-        if(!hasPermissions(context,Manifest.permission.BLUETOOTH_SCAN)) {
-            Log.w("BluetoothChat", "stopScan() -> does not have permission BLUETOOTH_SCAN")
-            return
         }
 
         _scannedDevices.value = emptyList()

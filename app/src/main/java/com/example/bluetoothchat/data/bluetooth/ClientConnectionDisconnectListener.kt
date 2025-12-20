@@ -8,8 +8,7 @@ import javax.inject.Inject
 class ClientConnectionDisconnectListener (
     val onDisconnected: (connection: Connection) -> Unit
 ) : DisconnectListener {
-    override fun disconnected(connection: Connection) {
-        onDisconnected(connection)
+    override fun onDisconnected() {
+        onDisconnected()
     }
-
 }

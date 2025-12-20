@@ -1,5 +1,5 @@
 package com.example.bluetoothchat.domain.bluetooth
 
-interface ConnectionListener {
+interface ReceiveListener {
     fun onReceived()
 }

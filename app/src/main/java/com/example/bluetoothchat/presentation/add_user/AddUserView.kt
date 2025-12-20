@@ -21,7 +21,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.bluetoothchat.domain.bluetooth.Device
-import com.example.bluetoothchat.domain.user.Contact
 import com.example.bluetoothchat.presentation.add_user.components.AddScreen
 import com.example.bluetoothchat.presentation.add_user.components.ScanScreen
 import com.example.bluetoothchat.presentation.components.ClickableCard

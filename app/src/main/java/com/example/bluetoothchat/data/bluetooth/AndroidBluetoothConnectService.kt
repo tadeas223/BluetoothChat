@@ -70,7 +70,7 @@ class AndroidBluetoothConnectService @Inject constructor(
                     val device = clientSocket.remoteDevice.toDevice()
                     val connection = ClientBluetoothConnection(clientSocket)
 
-                    connection.addDisconnectListener(ClientConnectionDisconnectListener { connection ->
+                    connection.addDisconnectListener(ClientConnectionDisconnectListener {
                         val current = _activeConnections.value.toMutableMap()
                         var device: Device? = null
                         current.forEach { entry ->
@@ -105,14 +105,14 @@ class AndroidBluetoothConnectService @Inject constructor(
         currentServerSocket?.close()
     }
 
-    override suspend fun connect(device: Device): Connection? {
+    override suspend fun connect(address: String): Connection? {
         if(!hasPermissions(context, requiredPermissions))  {
             throw SecurityException("missing required permissions")
         }
 
         val connection = ClientBluetoothConnection()
 
-        val blDevice = bluetoothAdapter?.getRemoteDevice(device.address)
+        val blDevice = bluetoothAdapter?.getRemoteDevice(address)
         val socket = blDevice?.createRfcommSocketToServiceRecord(UUID.fromString(SERVICE_UUID))
         if(socket != null) {
             connection.connectToSocket(socket)
@@ -120,35 +120,7 @@ class AndroidBluetoothConnectService @Inject constructor(
             return null
         }
 
-        val current = _activeConnections.value.toMutableMap()
-        if(current.contains(device)) {
-            CoroutineScope(Dispatchers.IO).launch {
-                current[device]?.disconnect()
-            }
-        }
-
-        current[device] = connection
-
         return connection
-    }
-
-    override suspend fun disconnect(device: Device) {
-        if(!hasPermissions(context, requiredPermissions))  {
-            throw SecurityException("missing required permissions")
-        }
-
-        val current = _activeConnections.value.toMutableMap()
-        if(!current.contains(device)) {
-            return
-        }
-
-        val connection = current[device]!!
-
-        connection.disconnect()
-
-        current.remove(device)
-
-        _activeConnections.value = current
     }
 
 }

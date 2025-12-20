@@ -2,9 +2,8 @@ package com.example.bluetoothchat.presentation.add_user
 
 import androidx.lifecycle.ViewModel
 import com.example.bluetoothchat.domain.bluetooth.BluetoothScanService
-import com.example.bluetoothchat.data.user.contact.ContactRepository
+import com.example.bluetoothchat.domain.user.contact.ContactRepository
 import com.example.bluetoothchat.domain.bluetooth.Device
-import com.example.bluetoothchat.domain.user.Contact
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -3,15 +3,15 @@ package com.example.bluetoothchat.domain.bluetooth
 import com.example.bluetoothchat.domain.Disposable
 import kotlinx.coroutines.flow.Flow
 
-interface Connection : Disposable {
-    val isConnected: Boolean
+interface Connection {
+    val isConnected: Flow<Boolean>
 
-    fun addListener(listener: ConnectionListener)
-    fun removeListener(listener: ConnectionListener)
+    fun addReceiveListener(listener: ReceiveListener)
+    fun removeReceiveListener(listener: ReceiveListener)
 
     fun addDisconnectListener(listener: DisconnectListener)
     fun removeDisconnectListener(listener: DisconnectListener)
 
     suspend fun disconnect()
-    suspend fun send(transferable: Transferable<*>)
+    suspend fun <T: Any> send(transferable: Transferable<T>)
 }

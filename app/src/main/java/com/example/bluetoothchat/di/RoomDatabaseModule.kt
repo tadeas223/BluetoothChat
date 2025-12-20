@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import com.example.bluetoothchat.data.db.AppDatabase
 import com.example.bluetoothchat.data.user.contact.ContactDao
-import com.example.bluetoothchat.data.user.contact.ContactRepository
+import com.example.bluetoothchat.domain.user.contact.ContactRepository
 import com.example.bluetoothchat.data.user.contact.RoomContactRepository
 import dagger.Module
 import dagger.Provides

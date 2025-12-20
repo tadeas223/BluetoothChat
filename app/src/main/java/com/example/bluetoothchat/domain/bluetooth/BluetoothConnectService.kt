@@ -10,6 +10,5 @@ interface BluetoothConnectService {
     fun startServer()
     fun stopServer()
 
-    suspend fun connect(device: Device): Connection?
-    suspend fun disconnect(device: Device)
+    suspend fun connect(address: String): Connection?
 }

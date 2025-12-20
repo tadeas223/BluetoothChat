@@ -15,12 +15,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.bluetoothchat.domain.bluetooth.BluetoothConnectService
 import com.example.bluetoothchat.presentation.add_user.AddUserView
 import com.example.bluetoothchat.presentation.theme.BluetoothChatTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var bluetoothConnectService: BluetoothConnectService
 
     private val bluetoothManager by lazy {
         applicationContext.getSystemService(BluetoothManager::class.java)
@@ -59,6 +64,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LaunchedEffect(true) {
+                bluetoothConnectService.startServer()
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     permissionLauncher.launch(
                         arrayOf(

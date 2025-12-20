@@ -1,6 +1,6 @@
 package com.example.bluetoothchat.data.user.contact
 
-import com.example.bluetoothchat.domain.user.Contact
+import com.example.bluetoothchat.domain.user.contact.Contact
 
 fun ContactEntity.toContact(): Contact {
     return Contact(

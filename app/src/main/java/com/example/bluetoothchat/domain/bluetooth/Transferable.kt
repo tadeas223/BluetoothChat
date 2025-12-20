@@ -1,6 +1,8 @@
 package com.example.bluetoothchat.domain.bluetooth
 
-interface Transferable<T> {
-    fun serialize(value: T): ByteArray
-    fun deserialize(data: ByteArray)
+import kotlin.reflect.KClass
+
+interface Transferable<T: Any> {
+    fun serialize(): ByteArray
+    fun deserialize(data: ByteArray): T
 }

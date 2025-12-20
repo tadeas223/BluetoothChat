@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.bluetoothchat.domain.user.Contact
+import com.example.bluetoothchat.domain.user.contact.Contact
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -15,11 +15,14 @@ interface ContactDao {
     @Query("SELECT * FROM contact WHERE :name = username")
     fun selectByName(name: String): ContactEntity
 
+    @Query("SELECT * FROM contact WHERE :id = id")
+    fun selectById(id: Int): ContactEntity
+
     @Query("SELECT * FROM contact WHERE :address = address")
     fun selectByAddress(address: String): ContactEntity
 
     @Query("SELECT * FROM contact")
-    fun selectAll(): Flow<List<Contact>>
+    fun selectAll(): List<ContactEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(contactEntity: ContactEntity)

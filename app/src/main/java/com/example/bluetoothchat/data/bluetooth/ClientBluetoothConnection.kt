@@ -1,62 +1,81 @@
 package com.example.bluetoothchat.data.bluetooth
 
 import android.bluetooth.BluetoothSocket
-import com.example.bluetoothchat.domain.bluetooth.BluetoothConnectService
+import androidx.compose.runtime.MutableState
 import com.example.bluetoothchat.domain.bluetooth.Connection
-import com.example.bluetoothchat.domain.bluetooth.ConnectionListener
+import com.example.bluetoothchat.domain.bluetooth.ReceiveListener
 import com.example.bluetoothchat.domain.bluetooth.DisconnectListener
 import com.example.bluetoothchat.domain.bluetooth.Transferable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.compose
+import kotlinx.coroutines.launch
+import java.io.IOException
 
 class ClientBluetoothConnection: Connection {
+    private var socket: BluetoothSocket? = null
+
+    private val _isConnected =  MutableStateFlow(false)
+    override val isConnected: Flow<Boolean>
+        get() = _isConnected
+
+
+    private val receiveListeners = mutableSetOf<ReceiveListener>()
+    private val disconnectListeners = mutableSetOf<DisconnectListener>()
+
     constructor() {}
 
     constructor(socket: BluetoothSocket) {
         this.socket = socket
+        _isConnected.value = socket.isConnected
     }
 
-    private var socket: BluetoothSocket? = null
-
-    suspend fun connectToSocket(socket: BluetoothSocket) {
+    fun connectToSocket(socket: BluetoothSocket) {
         socket.connect()
         this.socket = socket
+        _isConnected.value = socket.isConnected
     }
 
-    override val isConnected: Boolean
-        get() {
-            if(socket == null) {
-                return false
-            }
-            return socket!!.isConnected
-        }
-
-    override fun addListener(listener: ConnectionListener) {
-        TODO("Not yet implemented")
+    override fun addReceiveListener(listener: ReceiveListener) {
+        receiveListeners.add(listener)
     }
 
-    override fun removeListener(listener: ConnectionListener) {
-        TODO("Not yet implemented")
+    override fun removeReceiveListener(listener: ReceiveListener) {
+        receiveListeners.remove(listener)
     }
 
     override fun addDisconnectListener(listener: DisconnectListener) {
-        TODO("Not yet implemented")
+        disconnectListeners.add(listener)
     }
 
     override fun removeDisconnectListener(listener: DisconnectListener) {
-        TODO("Not yet implemented")
+        disconnectListeners.remove(listener)
     }
 
     override suspend fun disconnect() {
-        TODO("Not yet implemented")
+        socket?.close()
+        socket = null
+        _isConnected.value = false
+        callDisconnectListeners()
     }
 
-    override suspend fun send(transferable: Transferable<*>) {
-        TODO("Not yet implemented")
+    override suspend fun <T : Any> send(transferable: Transferable<T>) {
+        val serialized = transferable.serialize()
+        try {
+            socket?.outputStream?.write(serialized)
+        } catch(_: IOException) {
+            disconnect()
+        }
     }
 
-    override fun dispose() {
-        TODO("Not yet implemented")
+    private fun callDisconnectListeners() {
+        for (listener in disconnectListeners) {
+            listener.onDisconnected()
+        }
     }
 
 }

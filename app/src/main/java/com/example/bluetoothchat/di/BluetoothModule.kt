@@ -5,6 +5,8 @@ import com.example.bluetoothchat.data.bluetooth.AndroidBluetoothConnectService
 import com.example.bluetoothchat.data.bluetooth.AndroidBluetoothScanService
 import com.example.bluetoothchat.domain.bluetooth.BluetoothConnectService
 import com.example.bluetoothchat.domain.bluetooth.BluetoothScanService
+import com.example.bluetoothchat.domain.user.chat.ChatMessageRepository
+import com.example.bluetoothchat.domain.user.contact.ContactRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,8 +25,8 @@ class BluetoothModule {
 
     @Provides
     @Singleton
-    fun provideBluetoothConnectService(@ApplicationContext context: Context): BluetoothConnectService {
-        return AndroidBluetoothConnectService(context)
+    fun provideBluetoothConnectService(@ApplicationContext context: Context, chatMessageRepository: ChatMessageRepository, contactRepository: ContactRepository): BluetoothConnectService {
+        return AndroidBluetoothConnectService(context, chatMessageRepository, contactRepository)
     }
 
 }

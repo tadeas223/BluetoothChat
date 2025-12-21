@@ -14,6 +14,9 @@ suspend fun ChatMessageEntity.toChatMessage(contactRepository: ContactRepository
 }
 
 fun ChatMessage.toEntity(): ChatMessageEntity {
+    if(this.contact == null) {
+        throw Exception("contact must not be null")
+    }
     return ChatMessageEntity(
         id = this.id,
         contactId = this.contact.id,

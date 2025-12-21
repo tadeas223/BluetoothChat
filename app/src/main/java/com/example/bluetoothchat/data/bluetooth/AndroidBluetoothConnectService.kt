@@ -4,24 +4,39 @@ import android.Manifest
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothServerSocket
 import android.content.Context
+import android.os.strictmode.IncorrectContextUseViolation
+import android.system.Os.socket
+import android.util.Log
 import com.example.bluetoothchat.data.hasPermissions
 import com.example.bluetoothchat.domain.bluetooth.BluetoothConnectService
 import com.example.bluetoothchat.domain.bluetooth.Connection
 import com.example.bluetoothchat.domain.bluetooth.Device
+import com.example.bluetoothchat.domain.user.chat.ChatMessage
+import com.example.bluetoothchat.domain.user.chat.ChatMessageRepository
+import com.example.bluetoothchat.domain.user.contact.Contact
+import com.example.bluetoothchat.domain.user.contact.ContactRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import java.io.DataInputStream
 import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 
 class AndroidBluetoothConnectService @Inject constructor(
-    @ApplicationContext val context: Context
+    @ApplicationContext val context: Context,
+    val chatMessageRepository: ChatMessageRepository,
+    val contactRepository: ContactRepository
 ): BluetoothConnectService {
     companion object {
         const val SERVICE_UUID = "2bf1c8cf-f803-440d-8c91-b51f5115f232"
@@ -36,6 +51,7 @@ class AndroidBluetoothConnectService @Inject constructor(
     }
 
     private var serverJob: Job? = null
+    private val receiveScope = CoroutineScope(Dispatchers.IO)
 
     private val _activeConnections = MutableStateFlow<Map<Device, Connection>>(emptyMap())
     override val requiredPermissions = listOf(
@@ -67,7 +83,7 @@ class AndroidBluetoothConnectService @Inject constructor(
 
                 if(clientSocket != null) {
                     val device = clientSocket.remoteDevice.toDevice()
-                    val connection = ClientBluetoothConnection(clientSocket)
+                    val connection = ClientBluetoothConnection( clientSocket, chatMessageRepository)
 
                     connection.addDisconnectListener(ClientConnectionDisconnectListener {
                         val current = _activeConnections.value.toMutableMap()
@@ -86,6 +102,26 @@ class AndroidBluetoothConnectService @Inject constructor(
                         _activeConnections.value = current.toMap()
                     })
 
+                    connection.addReceiveListener(ChatMessageReceiveListener { message ->
+                        receiveScope.launch {
+                            if(connection.address == null) {
+                                return@launch
+                            }
+
+                            Log.d("BluetoothChat", "message receiver called")
+                            val correctContact: Contact = async  {
+                                contactRepository.selectByAddress(connection.address!!).first()
+                            }.await()
+
+                            val newMessage = ChatMessage(
+                                0,
+                                message.text,
+                                correctContact
+                            )
+                            chatMessageRepository.insert(newMessage)
+                        }
+                    })
+
                     val current = _activeConnections.value.toMutableMap()
                     current[device] = connection
                     _activeConnections.value = current.toMap()
@@ -102,6 +138,7 @@ class AndroidBluetoothConnectService @Inject constructor(
 
         serverJob?.cancel()
         currentServerSocket?.close()
+        receiveScope.cancel()
     }
 
     override suspend fun connect(address: String): Connection? {
@@ -109,7 +146,7 @@ class AndroidBluetoothConnectService @Inject constructor(
             throw SecurityException("missing required permissions")
         }
 
-        val connection = ClientBluetoothConnection()
+        val connection = ClientBluetoothConnection(chatMessageRepository)
 
         val blDevice = bluetoothAdapter?.getRemoteDevice(address)
         val socket = blDevice?.createRfcommSocketToServiceRecord(UUID.fromString(SERVICE_UUID))

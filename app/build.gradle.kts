@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.bluetoothchat"
-        minSdk = 27
+        minSdk = 33
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"

@@ -15,12 +15,14 @@ import com.example.bluetoothchat.domain.user.contact.Contact
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -43,13 +45,17 @@ class ChatViewModel @Inject constructor(
 
     val contact: StateFlow<Contact?> = _contact
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val messages: StateFlow<List<ChatMessage>> = _contactId
         .flatMapLatest { id ->
             if (id != null) messageRepository.selectByContactId(id)
             else emptyFlow()
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    var isConnected: Flow<Boolean> = emptyFlow()
+
+    private var _isConnected = MutableStateFlow(false)
+    val isConnected: StateFlow<Boolean>
+        get() = _isConnected.asStateFlow()
 
     fun setContact(id: Int) {
         viewModelScope.launch {
@@ -63,19 +69,25 @@ class ChatViewModel @Inject constructor(
                 connection = withContext(Dispatchers.IO) {
                     bluetoothConnectService.connect(it.address)
                 }
-                isConnected = connection?.isConnected ?: emptyFlow()
+
+                connection?.let { conn ->
+                    viewModelScope.launch {
+                        conn.isConnected.collect { connected ->
+                            _isConnected.value = connected
+                        }
+                    }
+                }
             }
         }
     }
     fun sendMessage(text: String) {
-        var connected = false
         viewModelScope.launch {
-            isConnected.collect {
-                connected = it
-            }
+            val connected = _isConnected.value
 
             if(connected && contact.value != null) {
-                messageRepository.insert(ChatMessage(text = text, contact = contact.value!!))
+                val message = ChatMessage(text = text, contact = contact.value!!)
+                connection?.send(message)
+                messageRepository.insert(message)
             }
         }
     }

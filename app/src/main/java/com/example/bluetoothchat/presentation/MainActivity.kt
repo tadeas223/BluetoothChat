@@ -50,29 +50,37 @@ class MainActivity : ComponentActivity() {
         val permissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { perms ->
-            val canEnableBluetooth = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                perms[Manifest.permission.BLUETOOTH] == true
-            } else true
+            val canConnect = perms[Manifest.permission.BLUETOOTH_CONNECT] == true
 
-
-            if(canEnableBluetooth && isBluetoothEnabled) {
-                enableBluetoothLauncher.launch(
-                    Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                )
+            if (canConnect) {
+                if (!isBluetoothEnabled) {
+                    enableBluetoothLauncher.launch(
+                        Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                    )
+                } else {
+                    bluetoothConnectService.startServer()
+                }
             }
         }
 
-        setContent {
-            LaunchedEffect(true) {
-                bluetoothConnectService.startServer()
 
+        setContent {
+            LaunchedEffect(Unit) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     permissionLauncher.launch(
                         arrayOf(
-                            Manifest.permission.BLUETOOTH_SCAN,
                             Manifest.permission.BLUETOOTH_CONNECT,
+                            Manifest.permission.BLUETOOTH_SCAN
                         )
                     )
+                } else {
+                    if (!isBluetoothEnabled) {
+                        enableBluetoothLauncher.launch(
+                            Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                        )
+                    } else {
+                        bluetoothConnectService.startServer()
+                    }
                 }
             }
 

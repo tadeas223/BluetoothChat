@@ -44,6 +44,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
 
             ChatView(id!!,
                 onBack = {
+                    navController.popBackStack()
 
             })
         }

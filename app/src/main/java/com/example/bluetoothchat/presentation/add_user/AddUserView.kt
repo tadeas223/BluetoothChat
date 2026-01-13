@@ -11,6 +11,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,10 +31,11 @@ import com.example.bluetoothchat.presentation.components.ClickableCardItem
 fun AddUserView(onBack: () -> Unit) {
     val viewModel = hiltViewModel<AddUserViewModel>()
     val scannedDevices by viewModel.scannedDevices.collectAsState()
-    viewModel.startScan()
+    LaunchedEffect(Unit) {
+        viewModel.startScan()
+    }
 
-    var selected: Device? = null;
-
+    var selected: Device? = null
     val navController = rememberNavController()
     NavHost(navController, startDestination = "scan") {
         composable("scan") {

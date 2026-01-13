@@ -66,16 +66,19 @@ class ChatViewModel @Inject constructor(
             }
 
             _contact.value?.let {
-                connection = withContext(Dispatchers.IO) {
-                    bluetoothConnectService.connect(it.address)
-                }
+                try {
+                    connection = withContext(Dispatchers.IO) {
+                        bluetoothConnectService.connect(it.address)
+                    }
 
-                connection?.let { conn ->
-                    viewModelScope.launch {
-                        conn.isConnected.collect { connected ->
-                            _isConnected.value = connected
+                    connection?.let { conn ->
+                        viewModelScope.launch {
+                            conn.isConnected.collect { connected ->
+                                _isConnected.value = connected
+                            }
                         }
                     }
+                } catch(e: Exception) {
                 }
             }
         }
@@ -90,6 +93,15 @@ class ChatViewModel @Inject constructor(
                 messageRepository.insert(message)
             }
         }
+    }
+
+    suspend fun removeContact() {
+        if(contact.value == null) {
+            Log.w("BluetoothChat", "cannot delete null contact");
+            return;
+        }
+
+        contactRepository.delete(contact.value!!);
     }
 
 }

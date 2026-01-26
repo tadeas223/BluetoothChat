@@ -1,5 +1,8 @@
 package com.example.bluetoothchat.presentation.add_user
 
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.bluetoothchat.domain.bluetooth.BluetoothConnectService
@@ -38,6 +41,14 @@ class AddUserViewModel @Inject constructor(
             Log.d("BluetoothChat", "adding contact, advertise: ${device.address}, real: ${connection.address}")
             connection.disconnect()
         }
+    }
+
+    fun makeDiscoverable(activity: Activity?, durationSeconds: Int = 300) {
+        Log.d("BluetoothChat", "AddUserViewModel.makeDiscoverable")
+        val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE).apply {
+            putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, durationSeconds)
+        }
+        activity?.startActivity(discoverableIntent)
     }
 
     override fun onCleared() {

@@ -1,6 +1,7 @@
 package com.example.bluetoothchat.presentation
 
 import android.Manifest
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Intent
@@ -70,6 +71,7 @@ class MainActivity : ComponentActivity() {
                     permissionLauncher.launch(
                         arrayOf(
                             Manifest.permission.BLUETOOTH_CONNECT,
+                            Manifest.permission.BLUETOOTH_ADVERTISE,
                             Manifest.permission.BLUETOOTH_SCAN
                         )
                     )

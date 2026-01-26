@@ -19,7 +19,7 @@ interface ContactDao {
     fun selectById(id: Int): Flow<ContactEntity>
 
     @Query("SELECT * FROM contact WHERE :address = address")
-    fun selectByAddress(address: String): Flow<ContactEntity>
+    fun selectByAddress(address: String): Flow<ContactEntity?>
 
     @Query("SELECT * FROM contact")
     fun selectAll(): Flow<List<ContactEntity>>

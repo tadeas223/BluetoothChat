@@ -21,8 +21,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
@@ -109,14 +111,21 @@ class AndroidBluetoothConnectService @Inject constructor(
                             }
 
                             Log.d("BluetoothChat", "message receiver called")
-                            val correctContact: Contact = async  {
-                                contactRepository.selectByAddress(connection.address!!).first()
-                            }.await()
+                            val correctContact = contactRepository
+                                    .selectByAddress(connection.address!!)
+
+                            val contact = async {
+                                correctContact.first()
+                            }.await();
+
+                            if(contact == null) {
+                                return@launch;
+                            }
 
                             val newMessage = ChatMessage(
                                 0,
                                 message.text,
-                                correctContact
+                                contact
                             )
                             chatMessageRepository.insert(newMessage)
                         }

@@ -9,7 +9,7 @@ interface ContactRepository {
     fun selectById(id: Int): Flow<Contact>
     fun selectAll(): Flow<List<Contact>>
     fun selectByName(name: String): Flow<Contact>
-    fun selectByAddress(address: String): Flow<Contact>
+    fun selectByAddress(address: String): Flow<Contact?>
     suspend fun update(contact: Contact)
     suspend fun delete(contact: Contact)
 }

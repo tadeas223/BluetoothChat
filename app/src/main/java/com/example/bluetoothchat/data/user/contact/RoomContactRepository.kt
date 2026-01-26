@@ -27,8 +27,8 @@ class RoomContactRepository @Inject constructor(
         return dao.selectByName(name).map { it.toContact() }
     }
 
-    override fun selectByAddress(address: String): Flow<Contact> {
-        return dao.selectByAddress(address).map{ it.toContact() }
+    override fun selectByAddress(address: String): Flow<Contact?> {
+        return dao.selectByAddress(address).map {it?.toContact() }
     }
 
     override suspend fun update(

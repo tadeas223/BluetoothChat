@@ -107,5 +107,12 @@ dependencies {
     // optional - Paging 3 Integration
     implementation("androidx.room:room-paging:$roomVersion")
 
+    // Jackson core streaming library
+    implementation("com.fasterxml.jackson.core:jackson-core:2.16.2")
+    // Jackson databind (ObjectMapper)
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.2")
+    // Optional: Jackson Kotlin module (helps with Kotlin classes)
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.2")
+
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 }

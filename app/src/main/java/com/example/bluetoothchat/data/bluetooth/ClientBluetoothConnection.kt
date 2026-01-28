@@ -3,11 +3,18 @@ package com.example.bluetoothchat.data.bluetooth
 import android.bluetooth.BluetoothSocket
 import android.util.Log
 import androidx.compose.runtime.MutableState
+import com.example.bluetoothchat.domain.bluetooth.AdvertisePacket
 import com.example.bluetoothchat.domain.bluetooth.Connection
 import com.example.bluetoothchat.domain.bluetooth.DisconnectListener
+import com.example.bluetoothchat.domain.bluetooth.MessagePacket
 import com.example.bluetoothchat.domain.bluetooth.ReceiveListener
 import com.example.bluetoothchat.domain.user.chat.ChatMessage
 import com.example.bluetoothchat.domain.user.chat.ChatMessageRepository
+import com.example.bluetoothchat.domain.user.contact.ContactRepository
+import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.core.JsonToken
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +31,8 @@ import java.io.DataOutputStream
 import java.io.IOException
 
 class ClientBluetoothConnection : Connection {
+    private val mapper = ObjectMapper()
+    private val factory = JsonFactory()
     private var chatMessageRepository: ChatMessageRepository
     private var scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -55,27 +64,46 @@ class ClientBluetoothConnection : Connection {
     fun receive() {
         Log.d("BluetoothChat", "receive()")
         scope.launch {
-            if(!_isConnected.value || socket == null) {
+            val socket = socket ?: run {
                 disconnect()
+                return@launch
             }
 
-            val inputStream = DataInputStream(socket?.inputStream)
+            try {
+                val parser = factory.createParser(socket.inputStream)
 
-            while(true) {
-                try {
-                    val length = inputStream.readInt()
-                    val bytes = inputStream.readNBytes(length)
-                    val json = Json.parseToJsonElement(bytes.toString(Charsets.UTF_8))
-                    val message = ChatMessage.deserialize(json)
-                    Log.d("BluetoothChat", "message received '${message}'")
-                    callReceiveListeners(message)
-                } catch(_: IOException) {
-                    disconnect()
+                while (true) {
+                    val token = parser.nextToken() ?: break
+
+                    if (token != JsonToken.START_OBJECT) {
+                        continue
+                    }
+
+                    val map: Map<String, Any?> =
+                        mapper.readValue(
+                            parser,
+                            object : TypeReference<Map<String, Any?>>() {}
+                        )
+
+                    when (map["type"]) {
+                        "message" -> {
+                            val message = map["message"] as? String ?: continue
+                            val packet = MessagePacket(message)
+                            callReceiveListenerOnMessage(packet)
+                        }
+                        "advertise" -> {
+                            val address = map["address"] as? String ?: continue
+                            val packet = AdvertisePacket(address)
+                            callReceiveListenerOnAdvertise(packet)
+                        }
+                    }
                 }
+            } catch (e: IOException) {
+                Log.d("BluetoothChat", "receive failed", e)
+                disconnect()
             }
         }
     }
-
     suspend fun connectToSocket(socket: BluetoothSocket) {
         try {
             socket.connect()
@@ -124,7 +152,6 @@ class ClientBluetoothConnection : Connection {
         val outputStream = DataOutputStream(socket!!.outputStream!!)
 
         try {
-            outputStream.writeInt(length)
             outputStream.write(serialized)
             Log.d("BluetoothChat", "message sent to ${socket!!.remoteDevice.address}")
         } catch(_: IOException) {
@@ -136,13 +163,19 @@ class ClientBluetoothConnection : Connection {
 
     private fun callDisconnectListeners() {
         for (listener in disconnectListeners) {
-            listener.onDisconnected()
+            listener.onDisconnected(this)
         }
     }
 
-    private fun callReceiveListeners(message: ChatMessage) {
+    private fun callReceiveListenerOnMessage(message: MessagePacket) {
         for (listener in receiveListeners) {
-            listener.onReceive(message)
+            listener.onMessagePacket(message)
+        }
+    }
+
+    private fun callReceiveListenerOnAdvertise(packet: AdvertisePacket) {
+        for (listener in receiveListeners) {
+            listener.onAdvertisePacket(packet)
         }
     }
 }

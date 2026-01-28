@@ -6,9 +6,9 @@ import com.example.bluetoothchat.domain.bluetooth.DisconnectListener
 import javax.inject.Inject
 
 class ClientConnectionDisconnectListener (
-    val onDisconnected: (connection: Connection) -> Unit
+    val onDisconnectedCallback: (connection: Connection) -> Unit
 ) : DisconnectListener {
-    override fun onDisconnected() {
-        onDisconnected()
+    override fun onDisconnected(connection: Connection) {
+        onDisconnectedCallback(connection)
     }
 }

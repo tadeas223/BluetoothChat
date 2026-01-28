@@ -1,6 +1,7 @@
 package com.example.bluetoothchat.data.bluetooth
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -56,6 +57,7 @@ class AndroidBluetoothScanService @Inject constructor(
     override val scannedDevices: StateFlow<List<Device>>
         get() = _scannedDevices.asStateFlow()
 
+    @SuppressLint("MissingPermission")
     override fun startScan() {
         if(!hasPermissions(context, requiredPermissions)) {
             throw SecurityException("missing required permissions")
@@ -76,6 +78,7 @@ class AndroidBluetoothScanService @Inject constructor(
         bluetoothAdapter?.startDiscovery()
     }
 
+    @SuppressLint("MissingPermission")
     override fun stopScan() {
         if(!hasPermissions(context, requiredPermissions)) {
             throw SecurityException("missing required permissions")

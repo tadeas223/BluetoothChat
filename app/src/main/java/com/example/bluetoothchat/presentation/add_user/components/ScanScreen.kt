@@ -33,7 +33,7 @@ fun ScanScreen(
 
     val scannedDevices by viewModel.scannedDevices.collectAsState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel) {
         viewModel.startScan()
         viewModel.makeDiscoverable(activity)
     }
